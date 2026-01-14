@@ -14,8 +14,10 @@ const kalanTable = document.getElementById(`kalan`)
 
 //? variables
 
-let gelirler = 0;
-let harcamaListesi = [];
+let gelirler = Number(localStorage.getItem(`gelirler`)) || 0;
+let harcamaListesi = JSON.parse(localStorage.getItem(`harcamalar`)) || [];
+
+
 
 //* Harcama Formu
 
@@ -39,9 +41,14 @@ harcamaFormu.addEventListener(`submit`, (e) => {
         id: new Date().getTime() //db ile calisirken kendisi otomatik atama yapiyor ama local yaptigimiz icin kendimiz id atamasi yaptik.
     }
     harcamaListesi.push(yeniHarcama)
+
+    //!localStorage ye diziyi yollama
+
+    localStorage.setItem(`harcamalar`, JSON.stringify(harcamaListesi))
+
     //console.table(harcamaListesi);// refresh yapinca kalici degil... 
     //ekrana bastir ayni yere yazmak mantikli degil 
-    harcamayiShowScreen(yeniHarcama)
+    harcamayiShowScreen(yeniHarcama) // sadece yeni eklenen harcamayi gosterir.
     harcamaFormu.reset() //form doldurma islemi sonrasi kaydedince alanlari sifirlama
     // harcama()
     // render()
@@ -62,6 +69,9 @@ const harcamayiShowScreen = ({ id, tarih, miktar, aciklama }) => {
         sil.onclick = () => {
             // sil.parentElement.parentElement.remove() 
             sil.closest(`tr`).remove()
+            //arrayden de silme islemi tiklamadiklarim dizi de kalmali.
+            harcamaListesi = harcamaListesi.filter((a) =>  Number(a.id) !== sil.id )
+            localStorage.setItem(`harcamalar`, JSON.stringify(harcamaListesi))
         }
     })
 }
@@ -75,11 +85,12 @@ const harcamayiShowScreen = ({ id, tarih, miktar, aciklama }) => {
 //     <td class="bg-danger">${a.tarih}</td>
 //     <td>${a.aciklama}</td>
 //     <td>${a.miktar}</td>
-//     <td><i id=${id} class="fa-solid fa-trash-can text-danger"  type="button"></i></td>
+//     <td><i id=${a.id} class="fa-solid fa-trash-can text-danger"  type="button"></i></td>
 //     </tr>`
 // }
 //     )
 // };
+// harcama()
 
 
 //todo map ile yapilisi
@@ -110,6 +121,7 @@ const harcamayiShowScreen = ({ id, tarih, miktar, aciklama }) => {
 ekleFormu.addEventListener(`submit`, (e) => {
     e.preventDefault()
     gelirler += +gelirBtn.value
+    localStorage.setItem(`gelirler`, gelirler)
     hesaplaGuncelle()
     gelirBtn.value = ``;
 })
@@ -120,7 +132,7 @@ ekleFormu.addEventListener(`submit`, (e) => {
 const hesaplaGuncelle = () => {
     gelirinizTable.textContent = gelirler;
 
-    const giderler = harcamaListesi.reduce((acc, giderler)=> acc + +giderler.miktar , 0)
+    const giderler = harcamaListesi.reduce((acc, giderler) => acc + +giderler.miktar, 0)
     giderinizTable.textContent = giderler
     kalanTable.textContent = gelirler - giderler
 }
@@ -129,11 +141,19 @@ const hesaplaGuncelle = () => {
 
 //! Bilgileri Temizle
 
-temizleBtn.onclick=()=>{
-    if(confirm(`All data will deleted ?`)){
+temizleBtn.onclick = () => {
+    if (confirm(`All data will deleted ?`)) {
         harcamaListesi = [];
         gelirler = 0;
         hesaplaGuncelle()
         harcamaBody.innerHTML = ``
+        localStorage.clear()
     }
 }
+
+// localStorage dan verileri cektim ama refreshte veriler gelmedi gelmesi icin arrow function ile yaptigim icin en altta cagircam funclari
+//! refresh yapma durumunda localStorage dan verileri cekme ve ekrana bastirma
+harcamaListesi.forEach((harcama) => {
+    harcamayiShowScreen(harcama)
+})
+hesaplaGuncelle()
