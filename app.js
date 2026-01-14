@@ -70,8 +70,9 @@ const harcamayiShowScreen = ({ id, tarih, miktar, aciklama }) => {
             // sil.parentElement.parentElement.remove() 
             sil.closest(`tr`).remove()
             //arrayden de silme islemi tiklamadiklarim dizi de kalmali.
-            harcamaListesi = harcamaListesi.filter((a) =>  Number(a.id) !== sil.id )
+            harcamaListesi = harcamaListesi.filter((a) =>  Number(a.id) != sil.id )
             localStorage.setItem(`harcamalar`, JSON.stringify(harcamaListesi))
+            hesaplaGuncelle()
         }
     })
 }
